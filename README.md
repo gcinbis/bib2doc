@@ -30,9 +30,7 @@ The set of all possible fields (define only the ones that are relevant and known
 | pages        | Page range (start_page-end_page).|
 | volume       | Volume. |
 | jindex       | null,  "SCI",  "SCI-E"|
-| student      | null (first author is not my student),  "unofficial" (first author is my unofficial student at the time),  "official"|
 | note         | Some additional note (like LNCS reference)|
-| metu_kod     | See http://pdb.metu.edu.tr/etkinliklerin-puanlamasi|
 | ...          | Any other field can be added if useful.|
 
  
