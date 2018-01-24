@@ -7,7 +7,7 @@ Tools to automatically generate bibliography in various formats (HTML, TEX, etc)
 ## Database file format
 
 Bibliography data should be stored as a YAML file that consists of a set of entries, one entry per paper 
-(See example_bib.yaml).
+(See examples/publications.yaml).
 
 The set of all possible fields (define only the ones that are relevant and known):
 
