@@ -2,7 +2,7 @@
 Tools to automatically generate bibliography in various formats (HTML, TEX, etc) from text-based records
 
 ## List of utilities
-* bib2html                      Auto-create bibliography web page based on a jinja template.
+* bib2html  Auto-create bibliography web page based on a jinja template. (An example output can be found <a href="http://user.ceng.metu.edu.tr/~gcinbis/publications.html">here</a>.)
 
 ## Database file format
 
