@@ -1,0 +1,201 @@
+#!/usr/bin/env python
+#
+# A tool to create publication list as an html or tex file, based on a bib file (YAML).
+#
+# Developed for Python 2.7
+#
+# Gokberk Cinbis, 2017
+
+# A small note regarding pip on MAC: usually /usr/bin/python and /usr/local/bin/python 
+# are independent. Make sure you install required packages using the right pip.
+
+from jinja2 import Environment, FileSystemLoader
+import argparse
+import yaml     # pip install pyyaml
+import os
+import sys
+from numbers import Number
+
+template_search_path = [os.getcwd(),os.path.dirname(os.path.abspath(__file__))]
+
+class Bib2Doc:
+    """
+    Generic conversion class, shared across all publication list generators (html, tex, etc).
+    This class shall be kept independent from the "args" structure used in specific convertion scripts.
+    """
+
+    def __init__(self,bibfile):
+        ''' 
+        Initialize by loading contents of a bibfile 
+        @bibfile    A string or an array of strings
+        '''
+        self.bib = []
+        if isinstance(bibfile,list):
+            for f in bibfile:
+                self.append_bib(f)
+        elif isinstance(bibfile,str):
+            self.append_bib(bibfile)
+        else:
+            raise Exception("bibfile argument should be a string or a set of string")
+
+    def count_types(self,types):
+        """ Count number of papers with type in types """
+        count = 0
+        for p in self.bib:
+            try:
+                if p['type'] in types:
+                    count = count + 1
+            except Exception:
+                print(p)
+            
+        return count
+
+    def count_preprint(self):
+        """ Count number of papers with type = under_review or working_paper """
+        return self.count_types(['under_review','working_paper'])
+
+    def append_bib(self,bibfile):
+        """
+        Read the publications database, and append it to the existing bib.
+        """
+        bib = self.bib
+        with open(bibfile, "r") as f:
+            collections = yaml.load_all(f) 
+            for records in collections: # there is normally a single "records" in "collections"
+                for paper in records:
+                    bib.append(paper)
+
+    def sort(self,newestFirst=True):
+        """
+        Sort the publications database. Uses the following default values: year=2100, month=12.
+        month4sort field overrides month when defined for a publication.
+
+        @newestFirst    If True, bib is sorted from newest to oldest.
+        """
+
+        DEFAULT_YEAR = 2100
+        DEFAULT_MONTH = 12
+
+        # helper functions
+        def getf(p,field,default):
+            x = self.getfieldwithdefault(p,field,default)
+            if not isinstance(x, Number):
+                return default
+            return x
+
+        def p2priority(p):
+            year = getf(p,'year',DEFAULT_YEAR) 
+            if Bib2Doc.isdef(p,'month4sort'):
+                month = getf(p,'month4sort',DEFAULT_MONTH) 
+            else:
+                month = getf(p,'month',DEFAULT_MONTH)
+            return (year,month) # sort by year first, then month
+
+        # now sort
+        prior = [p2priority(p) for p in self.bib]
+        self.bib = [x for _, x in sorted(zip(prior,self.bib), key=lambda pair: pair[0])]
+
+        if newestFirst:
+            self.bib = self.bib[::-1]
+            #self.bib = reversed(self.bib) --> returns an iterator
+
+    @staticmethod
+    def fix_html_ampersand(paper):
+        """
+        Replace & with &amp; in all string-valued fields of paper except the following: {pdf,img}
+        """
+        for key in paper:
+            if key in {'pdf','img'}:
+                continue # do not alter these fields as they contain link/path.
+            if type(paper[key])==str:
+                paper[key] = paper[key].replace('&','&amp;') 
+        return paper
+
+    @staticmethod
+    def get_pdf_href(paper):
+        """ Utility function that returns paper.pdf or '#' """
+        return paper['pdf'] if Bib2Doc.isdef(paper,'pdf') else '#' 
+
+    @staticmethod
+    def get_venue(paper):
+        """ Return journal/conference name """
+        if Bib2Doc.isdef(paper,'type') and (paper['type'] == 'journal'):
+            return paper['journal']
+        else:
+            return paper['booktitle']
+
+    _month2name = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 
+            8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+
+    @classmethod
+    def get_month_name(cls,paper):
+        """
+        Utility function to get month name for a paper.
+        Return "" if paper.month is undefined or unrecognized
+        """
+        try:
+            return cls._month2name[paper['month']]
+        except Exception as e:
+            return ""
+
+    @staticmethod
+    def isdef(paper,field):
+        """ Return True iff paper[field] is defined and not empty """
+        return True if ((field in paper) and (paper[field])) else False
+
+    @staticmethod
+    def getfieldwithdefault(paper,field,default):
+        """ Return paper[field] (if defined) or '' """
+        try:
+            return paper[field]
+        except Exception:
+            return default
+
+    @staticmethod
+    def get_vol_num_pp_loc_mon_year(p):
+        """ Return a string according to the following template and the available information: 'volume (number), pp. pages, location, month year' """
+        out = ''
+        # Don't force "journal" type -- if Bib2Doc.getfieldwithdefault(p,'type','')=='journal' --
+        if Bib2Doc.isdef(p,'volume'):
+            if Bib2Doc.isdef(p,'number'):
+                out += str(p['volume']) + '(' + str(p['number']) + '),'
+            else:
+                out += str(p['volume']) + ","
+        if Bib2Doc.isdef(p,'pages'):
+            out += 'pp. ' + str(p['pages']) + ', '
+        if Bib2Doc.isdef(p,'location'):
+            out += p['location'] + ', '
+        out += Bib2Doc.get_month_name(p) + ' ' # possibly ""
+        if Bib2Doc.isdef(p,'year'):
+            out += str(p['year'])
+        return out
+
+    @staticmethod
+    def field2htmllink(paper,field,text=None,target="_blank",css_class=''):
+        """ 
+        Return HTML link with href=paper.field, if paper[field] is defined, and '' otherwise. 
+        Text is field by default.
+        """
+        if not (css_class == ''):
+            css_class = ' class="' + css_class + '"'
+        return ("<a href=" + paper[field] + ' target="' + target + css_class + '">' + (text or field) + '</a>') if Bib2Doc.isdef(paper,field) else ""
+
+def getargs():
+    parser = argparse.ArgumentParser(description='''
+        Create a publication list document, based on a jinja2 template and a YAML bibliograph file.
+        ''')
+    parser.add_argument('template',help='Path of the jinja2 based HTML template.')
+    parser.add_argument('outputfile',help='Path of the output file.')
+    parser.add_argument('--bibfile',action='append',help='Add YAML bib file path. (Can be used multiple times to utilize multiple bib files)',required=True)
+    args = parser.parse_args()
+    
+    return args
+
+if __name__ == "__main__":
+    args = getargs()
+    bib2doc = Bib2Doc(args.bibfile)
+    bib2doc.sort(newestFirst=True) # todo/maybe: make this optional.
+    env = Environment(loader=FileSystemLoader(template_search_path),trim_blocks=True)
+    template = env.get_template(args.template)
+    template.stream(bib2doc=bib2doc).dump(args.outputfile)
+
