@@ -10,7 +10,7 @@ Bibliography data should be stored as a YAML file that consists of a set of entr
 The set of all possible fields (define only the ones that are relevant and known):
 
 | FIELD        | DEFINITION |
-| ------------ | :---------: |
+| ------------ | --------- |
 | type         | journal,  conference,  national,  report,  presentation,  book_chapter,  under_review,  working_paper|
 | img          | Link to teaser image. |
 | pdf          | Link to the pdf file|
