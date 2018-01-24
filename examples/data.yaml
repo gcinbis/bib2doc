@@ -1,0 +1,63 @@
+---
+
+# conference
+- type: conference
+  img: berkan17zsl.png # transparent background
+  title: "Attributes2Classname: A discriminative model for attribute-based unsupervised zero-shot learning"
+  author: B. Demirel, R. G. Cinbis, N. Ikizler-Cinbis
+  author2: Berkan Demirel, Ramazan Gokberk Cinbis, Nazli Ikizler-Cinbis
+  booktitle: IEEE International Conference on Computer Vision (ICCV)
+  location: Venice, Italy
+  pdf: "https://arxiv.org/pdf/1705.01734.pdf"
+  year: 2017
+  month: 10
+  selected: 1
+  code: "https://github.com/berkandemirel/attributes2classname"
+
+# journal example
+- type: journal
+  img: tgrs17zsl.jpg
+  title: Fine-Grained Object Recognition and Zero-Shot Learning in Remote Sensing Imagery
+  author: G. Sumbul, R. G. Cinbis, S. Aksoy
+  author2: Gencer Sumbul, Ramazan Gokberk Cinbis, Selim Aksoy
+  journal: IEEE Transactions on Geoscience and Remote Sensing (TGRS), in press
+  pdf: pdfs/gencer17tgrs.pdf
+  data: "data/tgrs17dataset.zip"
+  year: 2017
+  selected: 1
+  jindex: "SCI" 
+
+# under-review example 1
+- type: under_review
+  img: cvpr14multifold.jpg
+  title: Weakly Supervised Object Localization with Multi-fold Multiple Instance Learning
+  author: R. G. Cinbis, J. Verbeek, C. Schmid
+  author2: Ramazan Gokberk Cinbis, Jakob Verbeek, Cordelia Schmid
+  booktitle: IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)
+  location: "under review"
+  pdf: "https://hal.inria.fr/hal-01123482/file/paper.pdf"
+  year: 2015
+  code: "source_code/EdgeBoxWindowRefinement.zip"
+
+# under-review example 2
+- type: under_review
+  img: tgrs17zsl.jpg
+  title: Fine-Grained Object Recognition and Zero-Shot Learning in Remote Sensing Imagery
+  author: G. Sumbul, R. G. Cinbis, S. Aksoy
+  author2: Gencer Sumbul, Ramazan Gokberk Cinbis, Selim Aksoy
+  booktitle: Under review
+  year: 2017
+  selected: 1
+
+# arxiv example
+- type: working_paper
+  img: berkan17zsl.png # 
+  title: "Attributes2Classname: A discriminative model for attribute-based unsupervised zero-shot learning"
+  author: B. Demirel, R. G. Cinbis, N. Ikizler Cinbis
+  author: Berkan Demirel, Ramazan Gokberk Cinbis, Nazli Ikizler Cinbis
+  booktitle: "arXiv:1705.01734 (preprint)"
+  pdf: "https://arxiv.org/pdf/1705.01734.pdf"
+  year: 2017
+  month: 5
+  selected: 1
+

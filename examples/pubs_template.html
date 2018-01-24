@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<title>bib2doc example</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+
+<!-- See https://www.w3schools.com/w3css/w3css_downloads.asp -->
+
+<header class="w3-container w3-red">
+  <h1>bib2doc example</h1>
+  <p>See <a href="https://github.com/gcinbis/bib2doc">bib2doc github page</a> for more details.</p>
+</header>
+
+<div class="w3-container">
+    <h1>Preprints</h1>
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'under_review' or p.type == 'working_paper' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="w3-container">
+    <h1>Journal and Conference Publications</h1>
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'journal' or p.type == 'conference' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="w3-container">
+    <h1>Theses</h1>
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'thesis' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="w3-container">
+    <h1>Book Chapters</h1>
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'book_chapter' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="w3-container">
+    <h1>National Publications</h1>
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'national' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<div class="w3-container">
+    <h1>Technical Reports and Presentations</h1>
+    <!-- h1>Non-refereed Papers, Presentations</h1 -->
+    <div class="w3-container">
+        {% for p in bib2doc.bib %}
+            {% if p.type == 'report' or p.type == 'presentation' %}
+                {% include "pubs_helper.html" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<footer class="w3-container w3-red w3-margin-top">
+<p><!-- footer --></p>
+</footer>
+
+</body>
+</html>
+
+
