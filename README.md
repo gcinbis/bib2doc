@@ -1,6 +1,9 @@
 # bib2doc
 Tools to automatically generate bibliography in various formats (HTML, TEX, etc) from text-based records
 
+## Installation
+Simply clone the git repository to use the most recent code, or, use `pip install bib2doc`.
+
 ## List of utilities
 * bib2html  Auto-create bibliography web page based on a jinja template. (An example output can be found <a href="http://user.ceng.metu.edu.tr/~gcinbis/publications.html">here</a>.)
 
