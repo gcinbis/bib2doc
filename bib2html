@@ -158,9 +158,9 @@ class Bib2Doc:
         # Don't force "journal" type -- if Bib2Doc.getfieldwithdefault(p,'type','')=='journal' --
         if Bib2Doc.isdef(p,'volume'):
             if Bib2Doc.isdef(p,'number'):
-                out += str(p['volume']) + '(' + str(p['number']) + '),'
+                out += str(p['volume']) + '(' + str(p['number']) + '), '
             else:
-                out += str(p['volume']) + ","
+                out += str(p['volume']) + ", "
         if Bib2Doc.isdef(p,'pages'):
             out += 'pp. ' + str(p['pages']) + ', '
         if Bib2Doc.isdef(p,'location'):
