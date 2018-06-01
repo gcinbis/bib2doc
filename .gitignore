@@ -1,2 +1,4 @@
 dist/
 bib2doc.egg-info/
+build/
+*.swp
