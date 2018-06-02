@@ -25,6 +25,8 @@ The set of all possible fields (define only the ones that are relevant and known
 | journal      | Name of the journal. Only for "journal" publications, everything else should use "booktitle".|
 | booktitle    | Vanue name for conference, under-review (including journals), etc publications.|
 | award        | HTML snippet for award info|
+| author       | Author list, in the form of "G. Hinton, Y. LeCun"|
+| author2      | Author list, in the form of "Geoffrey Hinton, Yann LeCun"|
 | bibauthor    | Author list to be used for bibtex generation|
 | selected     | Add selected=1 for selected publications |
 | month        | Numeric month|
