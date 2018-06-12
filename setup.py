@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='bib2doc',    
-    version='0.1.1',                          
+    version='0.1.2',                          
     scripts=['bib2html']                  
 )
 

@@ -38,6 +38,29 @@ class Bib2Doc:
         else:
             raise Exception("bibfile argument should be a string or a set of string")
 
+    @staticmethod
+    def _mklist(val):
+        """ Convert None to [], any non-list to [val], and, keep list as is. """
+        if val == None:
+            return []
+        elif not isinstance(val,list):
+            return [val]
+        return val
+
+    def list_year(self):
+        """ Get list of unique years in decreasing order. If there are papers with no 'year' definition, None will be in the list. """
+        return reversed(sorted(list(set([self.getfieldwithdefaultNumeric(p,'year',None) for p in self.bib]))))
+
+    def filter(self,year=None):
+        """ 
+        Filter bib by year (and by other fields, in future). 
+        year can be a single year or a list of years. When year is missing in an entry, it is used as None.
+        """
+        # Add only if needed: If "bib" is defined, uses "bib" instead of internal bibliography. 
+        year = self._mklist(year)
+        bib = [p for p in self.bib if Bib2Doc.getfieldwithdefault(p,'year',None) in year]
+        return bib
+
     def count_types(self,types):
         """ Count number of papers with type in types """
         count = 0
@@ -65,6 +88,7 @@ class Bib2Doc:
                 for paper in records:
                     bib.append(paper)
 
+
     def sort(self,newestFirst=True):
         """
         Sort the publications database. Uses the following default values: year=2100, month=12.
@@ -75,20 +99,12 @@ class Bib2Doc:
 
         DEFAULT_YEAR = 2100
         DEFAULT_MONTH = 12
-
-        # helper functions
-        def getf(p,field,default):
-            x = self.getfieldwithdefault(p,field,default)
-            if not isinstance(x, Number):
-                return default
-            return x
-
         def p2priority(p):
-            year = getf(p,'year',DEFAULT_YEAR) 
+            year = Bib2Doc.getfieldwithdefaultNumeric(p,'year',DEFAULT_YEAR) 
             if Bib2Doc.isdef(p,'month4sort'):
-                month = getf(p,'month4sort',DEFAULT_MONTH) 
+                month = Bib2Doc.getfieldwithdefaultNumeric(p,'month4sort',DEFAULT_MONTH) 
             else:
-                month = getf(p,'month',DEFAULT_MONTH)
+                month = Bib2Doc.getfieldwithdefaultNumeric(p,'month',DEFAULT_MONTH)
             return (year,month) # sort by year first, then month
 
         # now sort
@@ -145,11 +161,19 @@ class Bib2Doc:
 
     @staticmethod
     def getfieldwithdefault(paper,field,default):
-        """ Return paper[field] (if defined) or '' """
+        """ Return paper[field] (if defined) or default """
         try:
             return paper[field]
         except Exception:
             return default
+
+    @staticmethod
+    def getfieldwithdefaultNumeric(p,field,default):
+        """ Get field of paper p. If the field is missing or not Numeric, return default """
+        x = Bib2Doc.getfieldwithdefault(p,field,default)
+        if not isinstance(x, Number):
+            return default
+        return x
 
     @staticmethod
     def get_vol_num_pp_loc_mon_year(p):
