@@ -51,14 +51,27 @@ class Bib2Doc:
         """ Get list of unique years in decreasing order. If there are papers with no 'year' definition, None will be in the list. """
         return reversed(sorted(list(set([self.getfieldwithdefaultNumeric(p,'year',None) for p in self.bib]))))
 
-    def filter(self,year=None):
+    def filter(self,field_defaults,**kwargs):
         """ 
-        Filter bib by year (and by other fields, in future). 
-        year can be a single year or a list of years. When year is missing in an entry, it is used as None.
+        Filter bib using a list of accepted field values.
+        self.filter(field_defaults,field1,val1,field2,val2,...)
+            * field_defaults is a dictionary of default values for fields. 
+              When a field is missing in an entry, it is treated as field_defaults[field] (if defined) or None.
+            * val can be a single value or a list of accepted values. 
+            * Note that fields are case-sensitive
         """
         # Add only if needed: If "bib" is defined, uses "bib" instead of internal bibliography. 
-        year = self._mklist(year)
-        bib = [p for p in self.bib if Bib2Doc.getfieldwithdefault(p,'year',None) in year]
+        if kwargs is None:
+            return self.bib
+        bib = self.bib
+        for fld, val in kwargs.items():
+            val = self._mklist(val)
+            if fld in field_defaults:
+                default = field_defaults[fld]
+            else:
+                default = None
+            print(fld,val,default)
+            bib = [p for p in bib if Bib2Doc.getfieldwithdefault(p,fld,default) in val]
         return bib
 
     def count_types(self,types):
