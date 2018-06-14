@@ -70,7 +70,7 @@ class Bib2Doc:
                 default = field_defaults[fld]
             else:
                 default = None
-            print(fld,val,default)
+            # print(fld,val,default)
             bib = [p for p in bib if Bib2Doc.getfieldwithdefault(p,fld,default) in val]
         return bib
 
