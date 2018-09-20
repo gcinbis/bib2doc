@@ -129,18 +129,6 @@ class Bib2Doc:
             #self.bib = reversed(self.bib) --> returns an iterator
 
     @staticmethod
-    def fix_html_ampersand(paper):
-        """
-        Replace & with &amp; in all string-valued fields of paper except the following: {pdf,img}
-        """
-        for key in paper:
-            if key in {'pdf','img'}:
-                continue # do not alter these fields as they contain link/path.
-            if type(paper[key])==str:
-                paper[key] = paper[key].replace('&','&amp;') 
-        return paper
-
-    @staticmethod
     def get_pdf_href(paper):
         """ Utility function that returns paper.pdf or '#' """
         return paper['pdf'] if Bib2Doc.isdef(paper,'pdf') else '#' 
@@ -207,8 +195,26 @@ class Bib2Doc:
             out += str(p['year'])
         return out
 
+    ###### DEPRECATED ###### 
+
+    @staticmethod
+    def fix_html_ampersand(paper):
+        """
+        DEPRECATED. WILL BE REMOVED IN A FUTURE RELEASE.
+        """
+        return Bib2Doc.html_fixampersand(paper)
+
     @staticmethod
     def field2htmllink(paper,field,text=None,target="_blank",css_class=''):
+        """
+        DEPRECATED. WILL BE REMOVED IN A FUTURE RELEASE.
+        """
+        return Bib2Doc.html_field2link(paper)
+    
+    ###### HTML-SPECIFIC ###### 
+
+    @staticmethod
+    def html_field2link(paper,field,text=None,target="_blank",css_class=''):
         """ 
         Return HTML link with href=paper.field, if paper[field] is defined, and '' otherwise. 
         Text is field by default.
@@ -217,11 +223,40 @@ class Bib2Doc:
             css_class = ' class="' + css_class + '"'
         return ("<a href=" + paper[field] + ' target="' + target + css_class + '">' + (text or field) + '</a>') if Bib2Doc.isdef(paper,field) else ""
 
+    @staticmethod
+    def html_fixampersand(paper):
+        """
+        Replace & with &amp; in all string-valued fields of paper except the following: {pdf,img}
+        """
+        for key in paper:
+            if key in {'pdf','img'}:
+                continue # do not alter these fields as they contain link/path.
+            if type(paper[key])==str:
+                paper[key] = paper[key].replace('&','&amp;') 
+        return paper
+
+
+    ###### TEX-SPECIFIC ###### 
+
+    @staticmethod
+    def tex_fixampersand(paper):
+        """
+        Replace & with \\& in all string-valued fields of paper except the following: {pdf,img}
+        """
+        for key in paper:
+            if key in {'pdf','img'}:
+                continue # do not alter these fields as they contain link/path.
+            if type(paper[key])==str:
+                paper[key] = paper[key].replace('&','\\&') 
+        return paper
+
+
 def getargs():
     parser = argparse.ArgumentParser(description='''
         Create a publication list document, based on a jinja2 template and a YAML bibliograph file.
+        See https://github.com/gcinbis/bib2doc and http://jinja.pocoo.org/docs/templates 
         ''')
-    parser.add_argument('template',help='Path of the jinja2 based HTML template.')
+    parser.add_argument('template',help='Path of the jinja2 based HTML OR TEX template.')
     parser.add_argument('outputfile',help='Path of the output file.')
     parser.add_argument('--bibfile',action='append',help='Add YAML bib file path. (Can be used multiple times to utilize multiple bib files)',required=True)
     args = parser.parse_args()
