@@ -1,7 +1,7 @@
 ---
 
 # conference
-- type: conference
+- type: inproceedings
   img: berkan17zsl.png # transparent background
   title: "Attributes2Classname: A discriminative model for attribute-based unsupervised zero-shot learning"
   author: B. Demirel, R. G. Cinbis, N. Ikizler-Cinbis
@@ -15,7 +15,7 @@
   code: "https://github.com/berkandemirel/attributes2classname"
 
 # journal example
-- type: journal
+- type: article
   img: tgrs17zsl.jpg
   title: Fine-Grained Object Recognition and Zero-Shot Learning in Remote Sensing Imagery
   author: G. Sumbul, R. G. Cinbis, S. Aksoy

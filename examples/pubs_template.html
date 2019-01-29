@@ -12,6 +12,8 @@
   <p>See <a href="https://github.com/gcinbis/bib2doc">bib2doc github page</a> for more details.</p>
 </header>
 
+{{ bib2doc.processtrack_init() }}
+
 <div class="w3-container">
     <h1>Preprints</h1>
     <div class="w3-container">
@@ -27,7 +29,7 @@
     <h1>Journal and Conference Publications</h1>
     <div class="w3-container">
         {% for p in bib2doc.bib %}
-            {% if p.type == 'journal' or p.type == 'conference' %}
+        {% if p.type == 'article' or p.type == 'inproceedings' %}
                 {% include "pubs_helper.html" %}
             {% endif %}
         {% endfor %}
@@ -38,7 +40,7 @@
     <h1>Theses</h1>
     <div class="w3-container">
         {% for p in bib2doc.bib %}
-            {% if p.type == 'thesis' %}
+            {% if p.type == 'mastersthesis' or p.type == 'phdthesis' %}
                 {% include "pubs_helper.html" %}
             {% endif %}
         {% endfor %}
@@ -78,6 +80,8 @@
         {% endfor %}
     </div>
 </div>
+
+{{ bib2doc.processtrack_check(warnonly=False) }}
 
 <footer class="w3-container w3-red w3-margin-top">
 <p><!-- footer --></p>

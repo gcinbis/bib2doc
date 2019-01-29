@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# A tool to create publication list as an html or tex file, based on a bib file (YAML).
+# A tool to create publication list as an html or tex file, based on a bib file (BIBTEX or YAML).
 #
 # Developed for Python 2.7
 #
@@ -12,9 +12,11 @@
 from jinja2 import Environment, FileSystemLoader
 import argparse
 import yaml     # pip install pyyaml
+import bibtexparser # pip install bibtexparser (https://github.com/sciunto-org/python-bibtexparser)
 import os
 import sys
 from numbers import Number
+import copy
 
 template_search_path = [os.getcwd(),os.path.dirname(os.path.abspath(__file__))]
 
@@ -30,6 +32,7 @@ class Bib2Doc:
         @bibfile    A string or an array of strings
         '''
         self.bib = []
+        self.num_processed = {} # num_processed[paper] gives the number of times the paper is processed
         if isinstance(bibfile,list):
             for f in bibfile:
                 self.append_bib(f)
@@ -74,6 +77,44 @@ class Bib2Doc:
             bib = [p for p in bib if Bib2Doc.getfieldwithdefault(p,fld,default) in val]
         return bib
 
+    @staticmethod
+    def paper2hashablestring(paper):
+        # No! paper is a dict, therefore, length is longer. assert len(paper)==1, 'len(paper)==1' 
+        assert isinstance(paper,type({}))
+        return str(paper) # this works!
+
+    def processtrack_init(self):
+        """ Reset the counter how many times each paper has been processed. Call this at the beginning of each comprehensive publication list page. """
+        self.num_processed = {}
+        return '' # to avoid nasty side-effects in Jekyll
+
+    def processtrack_markpaper(self,paper):
+        """ Mark a particular paper as processed. The passed paper should be the original record (eg, not the output of html_fixampersand). Use with processtrack_* """
+        h = Bib2Doc.paper2hashablestring(paper)
+        if h not in self.num_processed:
+            self.num_processed[h] = 1
+        else:
+            self.num_processed[h] = self.num_processed[h] + 1
+        return '' # to avoid nasty side-effects in Jekyll
+
+    def processtrack_check(self,warnonly):
+        """ Verify that we process each paper exactly once. Call this after the publications list is fully constructed. Use with processtrack_* """
+        errstr_init = '\n' # more readable in this way.
+        errstr = errstr_init
+        for p in self.bib:
+            h = Bib2Doc.paper2hashablestring(p)
+            if h not in self.num_processed:
+                errstr = errstr + ' * Not processed: ' + h + '\n\n'
+            elif self.num_processed[h] != 1:
+                errstr = errstr + ' * Processed ' + self.num_processed[h]  + ' times: ' + h + '\n\n'
+        if errstr != errstr_init:
+            if warnonly:
+                print("WARNING")
+                print(errstr)
+            else:
+                raise Exception(errstr)
+        return '' # to avoid nasty side-effects in Jekyll
+
     def count_types(self,types):
         """ Count number of papers with type in types """
         count = 0
@@ -90,6 +131,16 @@ class Bib2Doc:
         """ Count number of papers with type = under_review or working_paper """
         return self.count_types(['under_review','working_paper'])
 
+    @staticmethod
+    def add_default_values(paper):
+        """ Add default values for the missing or empty fields """
+        #if ('national' not in paper) or (paper['national']==None) or (paper['national']==''):
+        #    paper['national']=1
+        # Design choice note:
+        # * Do NOT make national a field. It makes processing very complicated, where one has to check
+        #   whether a publication is national or not, for every single publication.
+        return paper
+
     def append_bib(self,bibfile):
         """
         Read the publications database, and append it to the existing bib.
@@ -99,7 +150,7 @@ class Bib2Doc:
             collections = yaml.load_all(f) 
             for records in collections: # there is normally a single "records" in "collections"
                 for paper in records:
-                    bib.append(paper)
+                    bib.append(Bib2Doc.add_default_values(paper))
 
 
     def sort(self,newestFirst=True):
@@ -135,8 +186,8 @@ class Bib2Doc:
 
     @staticmethod
     def get_venue(paper):
-        """ Return journal/conference name """
-        if Bib2Doc.isdef(paper,'type') and (paper['type'] == 'journal'):
+        """ Return vanue name (journal for article, booktitle otherwise) """
+        if Bib2Doc.isdef(paper,'type') and (paper['type'] == 'article'):
             return paper['journal']
         else:
             return paper['booktitle']
@@ -180,7 +231,7 @@ class Bib2Doc:
     def get_vol_num_pp_loc_mon_year(p):
         """ Return a string according to the following template and the available information: 'volume (number), pp. pages, location, month year' """
         out = ''
-        # Don't force "journal" type -- if Bib2Doc.getfieldwithdefault(p,'type','')=='journal' --
+        # Don't force "article" type -- if Bib2Doc.getfieldwithdefault(p,'type','')=='article' --
         if Bib2Doc.isdef(p,'volume'):
             if Bib2Doc.isdef(p,'number'):
                 out += str(p['volume']) + '(' + str(p['number']) + '), '
@@ -227,7 +278,9 @@ class Bib2Doc:
     def html_fixampersand(paper):
         """
         Replace & with &amp; in all string-valued fields of paper except the following: {pdf,img}
+        Returns a modified deep-copy of the input, to avoid unintended changes in the original bib records.
         """
+        paper = copy.deepcopy(paper)
         for key in paper:
             if key in {'pdf','img'}:
                 continue # do not alter these fields as they contain link/path.
@@ -242,7 +295,9 @@ class Bib2Doc:
     def tex_fixampersand(paper):
         """
         Replace & with \\& in all string-valued fields of paper except the following: {pdf,img}
+        Returns a modified deep-copy of the input, to avoid unintended changes in the original bib records.
         """
+        paper = copy.deepcopy(paper)
         for key in paper:
             if key in {'pdf','img'}:
                 continue # do not alter these fields as they contain link/path.
