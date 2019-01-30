@@ -97,11 +97,14 @@ class Bib2Doc:
             self.num_processed[h] = self.num_processed[h] + 1
         return '' # to avoid nasty side-effects in Jekyll
 
-    def processtrack_check(self,warnonly):
+    def processtrack_check(self,warnonly,custombib=None):
         """ Verify that we process each paper exactly once. Call this after the publications list is fully constructed. Use with processtrack_* """
+        """ If a filtered result is being shown in the page, feed filter result to custombib """
         errstr_init = '\n' # more readable in this way.
         errstr = errstr_init
-        for p in self.bib:
+        if custombib is None:
+            custombib = self.bib
+        for p in custombib:
             h = Bib2Doc.paper2hashablestring(p)
             if h not in self.num_processed:
                 errstr = errstr + ' * Not processed: ' + h + '\n\n'
