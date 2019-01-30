@@ -1,5 +1,5 @@
 {{ bib2doc.processtrack_markpaper(p) }}
-{% set p = bib2doc.fix_html_ampersand(p) %}
+{% set p = bib2doc.html_fixampersand(p) %}
 <div class="w3-card">
 <div class="col-xs-1 vcenter paper_leftcol"> 
     <a href="{{ bib2doc.get_pdf_href(p) }}" target="blank_"><img class="media-object" src="teaser_images/{{ p.img or "empty.jpg" }}" alt="Image"></a>
@@ -22,9 +22,9 @@
     </span>
     </div>
     <div> 
-        {{ bib2doc.field2htmllink(p,'code') }}
-        {{ bib2doc.field2htmllink(p,'slides') }}
-        {{ bib2doc.field2htmllink(p,'data') }}
+        {{ bib2doc.html_field2link(p,'code') }}
+        {{ bib2doc.html_field2link(p,'slides') }}
+        {{ bib2doc.html_field2link(p,'data') }}
     </div>
     {% if p.award %}
     <div> <span style="font-weight: bold;">Award:</span> {{ p.award }} </div>

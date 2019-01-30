@@ -147,7 +147,13 @@ class Bib2Doc:
         """
         bib = self.bib
         with open(bibfile, "r") as f:
-            collections = yaml.load_all(f) 
+            _, ext = os.path.splitext(bibfile)
+            if ext == '.yaml':
+                collections = yaml.load_all(f) 
+            elif ext == '.bib':
+                collections = bibtexparser.load(f) 
+            else:
+                raise Exception("Unrecognized file extension in " + bibfile)
             for records in collections: # there is normally a single "records" in "collections"
                 for paper in records:
                     bib.append(Bib2Doc.add_default_values(paper))
@@ -248,20 +254,9 @@ class Bib2Doc:
 
     ###### DEPRECATED ###### 
 
-    @staticmethod
-    def fix_html_ampersand(paper):
-        """
-        DEPRECATED. WILL BE REMOVED IN A FUTURE RELEASE.
-        """
-        return Bib2Doc.html_fixampersand(paper)
+    # fix_html_ampersand: use html_fixampersand instead.
+    # field2htmllink: use html_field2link instead.
 
-    @staticmethod
-    def field2htmllink(paper,field,text=None,target="_blank",css_class=''):
-        """
-        DEPRECATED. WILL BE REMOVED IN A FUTURE RELEASE.
-        """
-        return Bib2Doc.html_field2link(paper)
-    
     ###### HTML-SPECIFIC ###### 
 
     @staticmethod
