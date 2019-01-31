@@ -177,7 +177,8 @@ class Bib2Doc:
 
     def sort(self,newestFirst=True):
         """
-        Sort the publications database. Uses the following default values: year=2100, month=12.
+        Sort the publications database according to (year, month, title)
+        Uses the following default values: year=2100, month=12, title=''.
         month4sort field overrides month when defined for a publication.
 
         @newestFirst    If True, bib is sorted from newest to oldest.
@@ -191,7 +192,8 @@ class Bib2Doc:
                 month = Bib2Doc.getfieldwithdefaultNumeric(p,'month4sort',DEFAULT_MONTH) 
             else:
                 month = Bib2Doc.getfieldwithdefaultNumeric(p,'month',DEFAULT_MONTH)
-            return (year,month) # sort by year first, then month
+            title = Bib2Doc.getfieldwithdefault(p,'title','')
+            return (year,month,title) # sort by year first, then month, then title
 
         # now sort
         prior = [p2priority(p) for p in self.bib]
