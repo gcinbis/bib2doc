@@ -50,9 +50,11 @@ class Bib2Doc:
             return [val]
         return val
 
-    def list_year(self):
-        """ Get list of unique years in decreasing order. If there are papers with no 'year' definition, None will be in the list. """
-        return reversed(sorted(list(set([self.getfieldwithdefaultNumeric(p,'year',None) for p in self.bib]))))
+    def list_year(self,default_year=None):
+        """ Get list of unique years in decreasing order. If there are papers with no 'year' definition, default_year will be in the list. """
+        # return reversed(sorted(list(set([self.getfieldwithdefaultNumeric(p,'year',default_year) for p in self.bib]))))
+        # The above trick fails if year is not numeric.
+        return reversed(sorted(list(set([self.getfieldwithdefault(p,'year',default_year) for p in self.bib]))))
 
     def filter(self,field_defaults,**kwargs):
         """ 
@@ -80,7 +82,8 @@ class Bib2Doc:
     @staticmethod
     def paper2hashablestring(paper):
         # No! paper is a dict, therefore, length is longer. assert len(paper)==1, 'len(paper)==1' 
-        assert isinstance(paper,type({}))
+        if not isinstance(paper,type({})):
+            raise Exception("This is supposed to be a cell but it is not:\n" + str(paper))
         return str(paper) # this works!
 
     def processtrack_init(self):
@@ -144,22 +147,32 @@ class Bib2Doc:
         #   whether a publication is national or not, for every single publication.
         return paper
 
-    def append_bib(self,bibfile):
+    def append_paper(self,paper,convert_year_to_int):
+        paper = Bib2Doc.add_default_values(paper)
+        if convert_year_to_int and 'year' in paper:
+            paper['year'] = int(paper['year'])
+        self.bib.append(paper)
+
+    def append_bib(self,bibfile,convert_year_to_int=True):
         """
         Read the publications database, and append it to the existing bib.
+        convert_year_to_int: Recommended is True. This just ensures that per-year grouping works correctly.
         """
-        bib = self.bib
         with open(bibfile, "r") as f:
             _, ext = os.path.splitext(bibfile)
             if ext == '.yaml':
                 collections = yaml.load_all(f) 
+                for records in collections: # there is normally a single "records" in "collections"
+                    for paper in records:
+                        self.append_paper(paper,convert_year_to_int=convert_year_to_int)
             elif ext == '.bib':
-                collections = bibtexparser.load(f) 
+                records = (bibtexparser.load(f)).entries
+                for paper in records:
+                    if not('type' in paper):
+                        paper['type'] = paper['ENTRYTYPE']
+                    self.append_paper(paper,convert_year_to_int=convert_year_to_int)
             else:
                 raise Exception("Unrecognized file extension in " + bibfile)
-            for records in collections: # there is normally a single "records" in "collections"
-                for paper in records:
-                    bib.append(Bib2Doc.add_default_values(paper))
 
 
     def sort(self,newestFirst=True):
