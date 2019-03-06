@@ -81,6 +81,9 @@ class Bib2Doc:
 
     @staticmethod
     def paper2hashablestring(paper):
+        """
+        Returns a unique identifier for the entry.
+        """
         # No! paper is a dict, therefore, length is longer. assert len(paper)==1, 'len(paper)==1' 
         if not isinstance(paper,type({})):
             raise Exception("This is supposed to be a cell but it is not:\n" + str(paper))
@@ -112,7 +115,7 @@ class Bib2Doc:
             if h not in self.num_processed:
                 errstr = errstr + ' * Not processed: ' + h + '\n\n'
             elif self.num_processed[h] != 1:
-                errstr = errstr + ' * Processed ' + self.num_processed[h]  + ' times: ' + h + '\n\n'
+                errstr = errstr + ' * Processed ' + str(self.num_processed[h])  + ' times: ' + h + '\n\n'
         if errstr != errstr_init:
             if warnonly:
                 print("WARNING")
@@ -173,6 +176,24 @@ class Bib2Doc:
                     self.append_paper(paper,convert_year_to_int=convert_year_to_int)
             else:
                 raise Exception("Unrecognized file extension in " + bibfile)
+
+    def remove_duplicates(self):
+        """
+        Remove duplicate entries from the dataset. Relies completely on titles right now, as minor differences shall be ignored.
+        """
+        hash_set = set()
+        new_bib = []
+        for p in self.bib:
+            h_ = Bib2Doc.getfieldwithdefault(p,'title','')
+            if h_ == "":
+                new_bib.append(p)
+            elif h_ not in hash_set:
+                hash_set.add(h_)
+                new_bib.append(p)
+            else:
+                print("-- Removing the following duplicate entry (possibly more than one ImageLab author has this in his/her bib which is OK) --")
+                print(p)
+        self.bib = new_bib
 
 
     def sort(self,newestFirst=True):
@@ -334,6 +355,7 @@ def getargs():
 if __name__ == "__main__":
     args = getargs()
     bib2doc = Bib2Doc(args.bibfile)
+    bib2doc.remove_duplicates() # todo/maybe: make this optional.
     bib2doc.sort(newestFirst=True) # todo/maybe: make this optional.
     env = Environment(loader=FileSystemLoader(template_search_path),trim_blocks=True)
     template = env.get_template(args.template)
