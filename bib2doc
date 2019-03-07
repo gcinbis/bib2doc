@@ -150,6 +150,20 @@ class Bib2Doc:
         #   whether a publication is national or not, for every single publication.
         return paper
 
+    def remove_entries_by_type(self,entry_type):
+        new_bib = []
+        for p in self.bib:
+            if Bib2Doc.isdef(p,'type') and (p['type'] == entry_type):
+                print("======")
+                print("Removing the following entry based on entry type:")
+                print("======")
+                for k,v in p.items():
+                    print('   ' + k + ": " + str(v))
+            else:
+                new_bib.append(p)
+        self.bib = new_bib
+
+
     def append_paper(self,paper,convert_year_to_int):
         paper = Bib2Doc.add_default_values(paper)
         if convert_year_to_int and 'year' in paper:
@@ -191,8 +205,11 @@ class Bib2Doc:
                 hash_set.add(h_)
                 new_bib.append(p)
             else:
-                print("-- Removing the following duplicate entry (possibly more than one ImageLab author has this in his/her bib which is OK) --")
-                print(p)
+                print("======")
+                print("Removing the following duplicate entry (possibly more than one ImageLab author has this in his/her bib which is OK)")
+                print("======")
+                for k,v in p.items():
+                    print('   ' + k + ": " + str(v))
         self.bib = new_bib
 
 
@@ -233,9 +250,9 @@ class Bib2Doc:
     def get_venue(paper):
         """ Return vanue name (journal for article, booktitle otherwise) """
         if Bib2Doc.isdef(paper,'type') and (paper['type'] == 'article'):
-            return paper['journal']
+            return Bib2Doc.getfieldwithdefault(paper,'journal','--',True)
         else:
-            return paper['booktitle']
+            return Bib2Doc.getfieldwithdefault(paper,'booktitle','--',True)
 
     _month2name = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 
             8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
@@ -257,11 +274,17 @@ class Bib2Doc:
         return True if ((field in paper) and (paper[field])) else False
 
     @staticmethod
-    def getfieldwithdefault(paper,field,default):
+    def getfieldwithdefault(paper,field,default,warnIfMissing=False):
         """ Return paper[field] (if defined) or default """
         try:
             return paper[field]
         except Exception:
+            if warnIfMissing:
+                print('=======')
+                print('WARNING The field "' + field + '" is missing in the following entry') 
+                print('=======')
+                for k,v in paper.items():
+                    print('   ' + k + ": " + str(v))
             return default
 
     @staticmethod
@@ -357,6 +380,7 @@ if __name__ == "__main__":
     bib2doc = Bib2Doc(args.bibfile)
     bib2doc.remove_duplicates() # todo/maybe: make this optional.
     bib2doc.sort(newestFirst=True) # todo/maybe: make this optional.
+    bib2doc.remove_entries_by_type('proceedings') # todo/maybe: make this optional. (remove full proceedings entries comingfrom dblp)
     env = Environment(loader=FileSystemLoader(template_search_path),trim_blocks=True)
     template = env.get_template(args.template)
     template.stream(bib2doc=bib2doc).dump(args.outputfile)
