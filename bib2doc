@@ -12,13 +12,23 @@
 from jinja2 import Environment, FileSystemLoader
 import argparse
 import yaml     # pip install pyyaml
-import bibtexparser # pip install bibtexparser (https://github.com/sciunto-org/python-bibtexparser)
+import bibtexparser
+from bibtexparser.bparser import BibTexParser # pip install bibtexparser (https://github.com/sciunto-org/python-bibtexparser)
+from bibtexparser.customization import convert_to_unicode
+#from bibtexparser.customization import homogeneize_latex_encoding
 import os
 import sys
 from numbers import Number
 import copy
 
 template_search_path = [os.getcwd(),os.path.dirname(os.path.abspath(__file__))]
+
+def mystr(x):
+    if isinstance(x,str):
+        return x
+    else:
+        return str(x).encode('utf-8', 'ignore').decode('utf-8')
+    #return s.encode('utf-8', 'ignore').decode('utf-8')
 
 class Bib2Doc:
     """
@@ -86,8 +96,8 @@ class Bib2Doc:
         """
         # No! paper is a dict, therefore, length is longer. assert len(paper)==1, 'len(paper)==1' 
         if not isinstance(paper,type({})):
-            raise Exception("This is supposed to be a cell but it is not:\n" + str(paper))
-        return str(paper) # this works!
+            raise Exception("This is supposed to be a cell but it is not:\n" + mystr(paper))
+        return mystr(paper) # this works!
 
     def processtrack_init(self):
         """ Reset the counter how many times each paper has been processed. Call this at the beginning of each comprehensive publication list page. """
@@ -113,9 +123,9 @@ class Bib2Doc:
         for p in custombib:
             h = Bib2Doc.paper2hashablestring(p)
             if h not in self.num_processed:
-                errstr = errstr + ' * Not processed: ' + h + '\n\n'
+                errstr = errstr + u' * Not processed: ' + h + '\n\n'
             elif self.num_processed[h] != 1:
-                errstr = errstr + ' * Processed ' + str(self.num_processed[h])  + ' times: ' + h + '\n\n'
+                errstr = errstr + u' * Processed ' + mystr(self.num_processed[h])  + ' times: ' + h + '\n\n'
         if errstr != errstr_init:
             if warnonly:
                 print("WARNING")
@@ -158,7 +168,7 @@ class Bib2Doc:
                 print("Removing the following entry based on entry type:")
                 print("======")
                 for k,v in p.items():
-                    print('   ' + k + ": " + str(v))
+                    print(u'   ' + k + u": " + mystr(v))
             else:
                 new_bib.append(p)
         self.bib = new_bib
@@ -175,6 +185,9 @@ class Bib2Doc:
         Read the publications database, and append it to the existing bib.
         convert_year_to_int: Recommended is True. This just ensures that per-year grouping works correctly.
         """
+        parser = BibTexParser()
+        # todo: parser.customization = convert_to_unicode # handle escape chars
+        # parser.customization = homogeneize_latex_encoding
         with open(bibfile, "r") as f:
             _, ext = os.path.splitext(bibfile)
             if ext == '.yaml':
@@ -183,7 +196,7 @@ class Bib2Doc:
                     for paper in records:
                         self.append_paper(paper,convert_year_to_int=convert_year_to_int)
             elif ext == '.bib':
-                records = (bibtexparser.load(f)).entries
+                records = (bibtexparser.load(f,parser=parser)).entries
                 for paper in records:
                     if not('type' in paper):
                         paper['type'] = paper['ENTRYTYPE']
@@ -209,7 +222,8 @@ class Bib2Doc:
                 print("Removing the following duplicate entry (possibly more than one ImageLab author has this in his/her bib which is OK)")
                 print("======")
                 for k,v in p.items():
-                    print('   ' + k + ": " + str(v))
+                    msg = (u'   ' + k + ": " + mystr(v))
+                    print(msg)
         self.bib = new_bib
 
 
@@ -289,7 +303,7 @@ class Bib2Doc:
                 print('WARNING The field "' + field + '" is missing in the following entry') 
                 print('=======')
                 for k,v in paper.items():
-                    print('   ' + k + ": " + str(v))
+                    print(u'   ' + k + ": " + mystr(v))
             return default
 
     @staticmethod
@@ -307,16 +321,16 @@ class Bib2Doc:
         # Don't force "article" type -- if Bib2Doc.getfieldwithdefault(p,'type','')=='article' --
         if Bib2Doc.isdef(p,'volume'):
             if Bib2Doc.isdef(p,'number'):
-                out += str(p['volume']) + '(' + str(p['number']) + '), '
+                out += mystr(p['volume']) + '(' + mystr(p['number']) + '), '
             else:
-                out += str(p['volume']) + ", "
+                out += mystr(p['volume']) + ", "
         if Bib2Doc.isdef(p,'pages'):
-            out += 'pp. ' + str(p['pages']) + ', '
+            out += 'pp. ' + mystr(p['pages']) + ', '
         if Bib2Doc.isdef(p,'location'):
             out += p['location'] + ', '
         out += Bib2Doc.get_month_name(p) + ' ' # possibly ""
         if Bib2Doc.isdef(p,'year'):
-            out += str(p['year'])
+            out += mystr(p['year'])
         return out
 
     ###### DEPRECATED ###### 
