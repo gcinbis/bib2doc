@@ -14,10 +14,11 @@ Bibliography data should be stored as a BIBTEX or YAML file that consists of a s
 The set of all possible YAML fields (define only the ones that are relevant and known):
 
 | FIELD        | DEFINITION | DEFAULT VALUE |
-| ------------ | --------- |
+| ------------ | --------- | --------- |
 | type         | article,  inproceedings,  thesis, report,  presentation, mastersthesis, phdthesis, book_chapter,  under_review,  working_paper, book_translation, (or any other custom value) | |
 | img          | Link to teaser image. | |
-| pdf          | Link to the pdf file.| |
+| url          | Link to the publication. | |
+| pdf          | Link to the publication. (Used only if 'url' is not provided.) | |
 | slides       | Link to slides.| |
 | code         | Link to code.| |
 | data         | Link to data.| |

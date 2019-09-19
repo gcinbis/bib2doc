@@ -243,8 +243,13 @@ class Bib2Doc:
 
     @staticmethod
     def get_pdf_href(paper):
-        """ Utility function that returns paper.pdf or '#' """
-        return paper['pdf'] if Bib2Doc.isdef(paper,'pdf') else '#' 
+        """ Utility function that returns paper.url or paper.pdf or '#' """
+        if Bib2Doc.isdef(paper,'url'):
+            return paper['url']
+        elif Bib2Doc.isdef(paper,'pdf'):
+            return paper['pdf']
+        else:
+            return '#'
 
     @staticmethod
     def get_venue(paper):
