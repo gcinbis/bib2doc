@@ -42,6 +42,7 @@ class Bib2Doc:
         @bibfile    A string or an array of strings
         '''
         self.bib = []
+        self.ext = None # extension
         self.num_processed = {} # num_processed[paper] gives the number of times the paper is processed
         if isinstance(bibfile,list):
             for f in bibfile:
@@ -390,6 +391,7 @@ def getargs():
     parser.add_argument('template',help='Path of the jinja2 based HTML OR TEX template.')
     parser.add_argument('outputfile',help='Path of the output file.')
     parser.add_argument('--bibfile',action='append',help='Add YAML bib file path. (Can be used multiple times to utilize multiple bib files)',required=True)
+    parser.add_argument('--addon',action='append',help='Path to a python file to incorporate additional functions. Functions are made accessible as bib2doc.ext.<fnc>()',required=False,default=None)
     args = parser.parse_args()
     
     return args
@@ -397,6 +399,11 @@ def getargs():
 if __name__ == "__main__":
     args = getargs()
     bib2doc = Bib2Doc(args.bibfile)
+    if args.addon is not None:
+        import imp
+        m = imp.load_source('Bib2DocExt__',args.addon[0])
+        import Bib2DocExt__ # import add-on functions. 
+        bib2doc.ext = Bib2DocExt__
     bib2doc.remove_duplicates() # todo/maybe: make this optional.
     bib2doc.sort(newestFirst=True) # todo/maybe: make this optional.
     bib2doc.remove_entries_by_type('proceedings') # todo/maybe: make this optional. (remove full proceedings entries comingfrom dblp)
