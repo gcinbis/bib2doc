@@ -334,6 +334,26 @@ class Bib2Doc:
             out += mystr(p['year'])
         return out
 
+    @staticmethod
+    def estimate_num_authors(p):
+        """ Return the comma-based estimated number of authors in the given publication record. """
+        warn = False
+        out = -1
+        if Bib2Doc.isdef(p,'author'):
+            if p['author'].count(' and ') > 0:
+                warn = True # ' and ' appears in the author list, our comma-based count is probably wrong, warn & return -1
+            else:
+                out = p['author'].count(',') + 1
+        else:
+            warn = True
+        if warn:
+            print('=======')
+            print('WARNING estimate_num_authors() failed in the following entry') 
+            print('=======')
+            for k,v in p.items():
+                print(u'   ' + k + ": " + mystr(v))
+        return out
+
     ###### DEPRECATED ###### 
 
     # fix_html_ampersand: use html_fixampersand instead.
