@@ -268,9 +268,14 @@ class Bib2Doc:
 
     @staticmethod
     def get_venue(paper):
-        """ Return vanue name (journal for article, booktitle otherwise) """
+        """ Return vanue name (journal for article, booktitle otherwise). If 'national', check what exists. """
         if Bib2Doc.isdef(paper,'type') and (paper['type'] == 'article'):
             return Bib2Doc.getfieldwithdefault(paper,'journal','--',True)
+        elif Bib2Doc.isdef(paper,'type') and (paper['type'] == 'national'):
+            if Bib2Doc.isdef(paper,'booktitle'):
+                return Bib2Doc.getfieldwithdefault(paper,'booktitle','--',True) # national conference
+            else:
+                return Bib2Doc.getfieldwithdefault(paper,'journal','--',True) # national journal
         else:
             return Bib2Doc.getfieldwithdefault(paper,'booktitle','--',True)
 
