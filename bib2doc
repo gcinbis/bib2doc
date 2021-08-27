@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # A tool to create publication list as an html or tex file, based on a bib file (BIBTEX or YAML).
 #
-# Developed for Python 2.7
+# Works with both Python 2.7 and Python 3
 #
-# Gokberk Cinbis, 2017
+# Author: Gokberk Cinbis
 
 # A small note regarding pip on MAC: usually /usr/bin/python and /usr/local/bin/python 
 # are independent. Make sure you install required packages using the right pip.
@@ -12,10 +12,6 @@
 from jinja2 import Environment, FileSystemLoader
 import argparse
 import yaml     # pip install pyyaml
-import bibtexparser
-from bibtexparser.bparser import BibTexParser # pip install bibtexparser (https://github.com/sciunto-org/python-bibtexparser)
-from bibtexparser.customization import convert_to_unicode
-#from bibtexparser.customization import homogeneize_latex_encoding
 import os
 import sys
 from numbers import Number
@@ -186,7 +182,6 @@ class Bib2Doc:
         Read the publications database, and append it to the existing bib.
         convert_year_to_int: Recommended is True. This just ensures that per-year grouping works correctly.
         """
-        parser = BibTexParser()
         # todo: parser.customization = convert_to_unicode # handle escape chars
         # parser.customization = homogeneize_latex_encoding
         with open(bibfile, "r") as f:
@@ -197,6 +192,12 @@ class Bib2Doc:
                     for paper in records:
                         self.append_paper(paper,convert_year_to_int=convert_year_to_int)
             elif ext == '.bib':
+                # import only if .bib is being used
+                import bibtexparser
+                from bibtexparser.bparser import BibTexParser # pip install bibtexparser (https://github.com/sciunto-org/python-bibtexparser)
+                from bibtexparser.customization import convert_to_unicode
+                #from bibtexparser.customization import homogeneize_latex_encoding
+                parser = BibTexParser()
                 records = (bibtexparser.load(f,parser=parser)).entries
                 for paper in records:
                     if not('type' in paper):
