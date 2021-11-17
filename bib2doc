@@ -187,7 +187,7 @@ class Bib2Doc:
         with open(bibfile, "r") as f:
             _, ext = os.path.splitext(bibfile)
             if ext == '.yaml':
-                collections = yaml.load_all(f) 
+                collections = yaml.load_all(f,Loader=yaml.SafeLoader) 
                 for records in collections: # there is normally a single "records" in "collections"
                     for paper in records:
                         self.append_paper(paper,convert_year_to_int=convert_year_to_int)
